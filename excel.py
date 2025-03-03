@@ -43,21 +43,17 @@ def get_grid_slice():
     lon_min = basin['lon_min'] - 1
     lon_max = basin['lon_max'] + 1
 
-    # 切片数据
+    # 切片数据并只保留tp
     ds_slice = ds.sel(
         latitude=slice(lat_min, lat_max),
         longitude=slice(lon_min, lon_max)
-    )
+    )[['tp']]
 
-    # 只保留需要的变量
-    if 'tp' in ds_slice:
-        ds_slice = ds_slice[['tp']]
+    # 转换为DataFrame并只保留需要的列
+    df = ds_slice.to_dataframe().reset_index()[['longitude', 'latitude', 'tp']]
 
-    # 转换为DataFrame
-    df = ds_slice.to_dataframe().reset_index()
-
-    # 只保留经纬度和tp
-    df = df[['longitude', 'latitude', 'tp']]
+    # 转换降水量单位为毫米
+    df['tp'] = df['tp'] * 1000
 
     # 保存为CSV
     output_csv = 'D:/herbin/basin_slice.csv'
@@ -67,7 +63,7 @@ def get_grid_slice():
     print(f"总记录数: {len(df)}")
 
 
-if __name__ == "__main__":x
+if __name__ == "__main__":
     try:
         print("提取流域区域数据...")
         get_grid_slice()
